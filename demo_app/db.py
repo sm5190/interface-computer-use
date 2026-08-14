@@ -5,7 +5,7 @@ import sqlite3
 from pathlib import Path
 from typing import Any
 
-from .fixtures import ACCOUNTS, MEMBERS
+from .fixtures import ACCOUNTS, MEMBERS, PROFILES
 
 
 def db_path() -> Path:
@@ -18,6 +18,7 @@ def db_path() -> Path:
 def connect() -> sqlite3.Connection:
     conn = sqlite3.connect(db_path())
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys = ON")
     return conn
 
 
@@ -33,6 +34,14 @@ def init_db() -> None:
                 status TEXT NOT NULL,
                 branch TEXT NOT NULL,
                 scenario TEXT NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS profiles (
+                member_id TEXT PRIMARY KEY,
+                phone TEXT NOT NULL,
+                email TEXT NOT NULL,
+                address TEXT NOT NULL,
+                FOREIGN KEY(member_id) REFERENCES members(member_id)
             );
 
             CREATE TABLE IF NOT EXISTS accounts (
@@ -53,6 +62,17 @@ def init_db() -> None:
                 initial_deposit REAL NOT NULL,
                 created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
             );
+
+            CREATE TABLE IF NOT EXISTS transactions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                member_id TEXT NOT NULL,
+                transaction_type TEXT NOT NULL,
+                from_account_id INTEGER,
+                to_account_id INTEGER,
+                amount REAL NOT NULL,
+                confirmation TEXT NOT NULL,
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
             """
         )
         member_count = conn.execute("SELECT COUNT(*) FROM members").fetchone()[0]
@@ -63,6 +83,13 @@ def init_db() -> None:
                 VALUES(:member_id, :name, :status, :branch, :scenario)
                 """,
                 MEMBERS,
+            )
+            conn.executemany(
+                """
+                INSERT INTO profiles(member_id, phone, email, address)
+                VALUES(:member_id, :phone, :email, :address)
+                """,
+                PROFILES,
             )
             conn.executemany(
                 """
@@ -79,13 +106,37 @@ def get_member(member_id: str) -> dict[str, Any] | None:
     return dict(row) if row else None
 
 
+def get_profile(member_id: str) -> dict[str, Any] | None:
+    with connect() as conn:
+        row = conn.execute("SELECT * FROM profiles WHERE member_id = ?", (member_id,)).fetchone()
+    return dict(row) if row else None
+
+
 def get_accounts(member_id: str) -> list[dict[str, Any]]:
     with connect() as conn:
         rows = conn.execute(
-            "SELECT account_type, masked_number, balance FROM accounts WHERE member_id = ? ORDER BY id",
+            """
+            SELECT id, account_type, masked_number, balance
+            FROM accounts
+            WHERE member_id = ?
+            ORDER BY id
+            """,
             (member_id,),
         ).fetchall()
     return [dict(row) for row in rows]
+
+
+def get_account(member_id: str, account_id: int) -> dict[str, Any] | None:
+    with connect() as conn:
+        row = conn.execute(
+            """
+            SELECT id, member_id, account_type, masked_number, balance
+            FROM accounts
+            WHERE member_id = ? AND id = ?
+            """,
+            (member_id, account_id),
+        ).fetchone()
+    return dict(row) if row else None
 
 
 def create_subaccount(
@@ -107,3 +158,67 @@ def create_subaccount(
         )
         row_id = int(cursor.lastrowid)
     return f"C-{row_id:07d}"
+
+
+def transfer_funds(*, member_id: str, from_account_id: int, to_account_id: int, amount: float) -> str:
+    if from_account_id == to_account_id:
+        raise ValueError("SOURCE AND DESTINATION ACCOUNTS MUST DIFFER")
+    if amount <= 0:
+        raise ValueError("TRANSFER AMOUNT MUST BE GREATER THAN ZERO")
+
+    with connect() as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        source = conn.execute(
+            "SELECT id, balance FROM accounts WHERE id = ? AND member_id = ?",
+            (from_account_id, member_id),
+        ).fetchone()
+        destination = conn.execute(
+            "SELECT id, balance FROM accounts WHERE id = ? AND member_id = ?",
+            (to_account_id, member_id),
+        ).fetchone()
+        if not source or not destination:
+            raise ValueError("ACCOUNT NOT FOUND")
+        if float(source["balance"]) < amount:
+            raise ValueError("INSUFFICIENT FUNDS")
+
+        conn.execute("UPDATE accounts SET balance = balance - ? WHERE id = ?", (amount, from_account_id))
+        conn.execute("UPDATE accounts SET balance = balance + ? WHERE id = ?", (amount, to_account_id))
+
+        confirmation = f"T-{int(conn.execute('SELECT COALESCE(MAX(id), 0) + 1 FROM transactions').fetchone()[0]):07d}"
+        conn.execute(
+            """
+            INSERT INTO transactions(
+                member_id, transaction_type, from_account_id, to_account_id, amount, confirmation
+            ) VALUES (?, 'TRANSFER', ?, ?, ?, ?)
+            """,
+            (member_id, from_account_id, to_account_id, amount, confirmation),
+        )
+    return confirmation
+
+
+def withdraw_funds(*, member_id: str, account_id: int, amount: float) -> str:
+    if amount <= 0:
+        raise ValueError("WITHDRAWAL AMOUNT MUST BE GREATER THAN ZERO")
+
+    with connect() as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        account = conn.execute(
+            "SELECT id, balance FROM accounts WHERE id = ? AND member_id = ?",
+            (account_id, member_id),
+        ).fetchone()
+        if not account:
+            raise ValueError("ACCOUNT NOT FOUND")
+        if float(account["balance"]) < amount:
+            raise ValueError("INSUFFICIENT FUNDS")
+
+        conn.execute("UPDATE accounts SET balance = balance - ? WHERE id = ?", (amount, account_id))
+        confirmation = f"W-{int(conn.execute('SELECT COALESCE(MAX(id), 0) + 1 FROM transactions').fetchone()[0]):07d}"
+        conn.execute(
+            """
+            INSERT INTO transactions(
+                member_id, transaction_type, from_account_id, to_account_id, amount, confirmation
+            ) VALUES (?, 'WITHDRAWAL', ?, NULL, ?, ?)
+            """,
+            (member_id, account_id, amount, confirmation),
+        )
+    return confirmation

@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Transaction Error{% endblock %}
+{% block content %}
+<h1>TRANSACTION NOT COMPLETED</h1>
+<div class="error-message">{{ message }}</div>
+<a class="legacy-link" href="{{ return_url }}">RETURN</a>
+{% endblock %}

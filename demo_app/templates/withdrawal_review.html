@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Review Withdrawal{% endblock %}
+{% block content %}
+<h1>REVIEW CASH WITHDRAWAL</h1>
+<table class="detail-table">
+  <tr><td>MEMBER:</td><td>{{ member.member_id }}</td></tr>
+  <tr><td>FROM:</td><td>{{ source.account_type }} {{ source.masked_number }}</td></tr>
+  <tr><td>AMOUNT:</td><td>${{ '%.2f'|format(pending.amount) }}</td></tr>
+</table>
+<div class="danger-box">HIGH-RISK ACTION: Confirming this withdrawal will immediately reduce the account balance.</div>
+<div class="review-actions">
+  <a class="legacy-link" href="/members/{{ member.member_id }}/withdraw">BACK</a>
+  <form method="post" action="/members/{{ member.member_id }}/withdraw/confirm">
+    <input type="submit" name="cmd_97" value="F12 CONFIRM WITHDRAWAL">
+  </form>
+</div>
+{% endblock %}

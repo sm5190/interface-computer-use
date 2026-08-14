@@ -18,6 +18,13 @@
       </form>
     </td>
   </tr>
-  <tr><td>PROFILE</td><td><button class="weak-button" disabled>&gt;</button></td></tr>
+  <tr>
+    <td>PROFILE</td>
+    <td>
+      <form method="get" action="/members/{{ member.member_id }}/profile">
+        <button name="cmd_23" class="weak-button">&gt;</button>
+      </form>
+    </td>
+  </tr>
 </table>
 {% endblock %}

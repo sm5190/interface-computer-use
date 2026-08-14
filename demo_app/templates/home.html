@@ -1,13 +1,17 @@
 {% extends "base.html" %}
-{% block title %}LegacyBank Operator Session{% endblock %}
+{% block title %}LegacyBank Operator Login{% endblock %}
 {% block content %}
-<h1>OPERATOR ACCESS</h1>
-<div class="notice">SYNTHETIC DEMONSTRATION ENVIRONMENT. NO REAL CUSTOMER DATA.</div>
-<form method="post" action="/session/start">
+<h1>OPERATOR SIGN ON</h1>
+<div class="notice">
+  SYNTHETIC DEMONSTRATION ENVIRONMENT. NO REAL CUSTOMER DATA.<br>
+  TRAINING CREDENTIALS: OPERATOR <strong>{{ operator_hint }}</strong> / PIN <strong>{{ pin_hint }}</strong>
+</div>
+{% if error %}<div class="error-message">{{ error }}</div>{% endif %}
+<form method="post" action="/login">
   <table class="legacy-form">
-    <tr><td>ENVIRONMENT:</td><td>TRAINING / LOCAL</td></tr>
-    <tr><td>OPERATOR:</td><td>DEMO-OPERATOR</td></tr>
-    <tr><td></td><td><input type="submit" name="cmd_1" value="START OPERATOR SESSION"></td></tr>
+    <tr><td>OPERATOR ID:</td><td><input type="text" name="op_id" size="18" maxlength="12"></td></tr>
+    <tr><td>PIN:</td><td><input type="password" name="op_pin" size="10" maxlength="8"></td></tr>
+    <tr><td></td><td><input type="submit" name="cmd_login" value="F8 SIGN ON"></td></tr>
   </table>
 </form>
 {% endblock %}

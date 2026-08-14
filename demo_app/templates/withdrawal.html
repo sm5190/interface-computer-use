@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Cash Withdrawal{% endblock %}
+{% block content %}
+<h1>CASH WITHDRAWAL</h1>
+<div class="member-line">MEMBER: {{ member.member_id }} / {{ member.name }}</div>
+{% if error %}<div class="error-message">{{ error }}</div>{% endif %}
+<form method="post" action="/members/{{ member.member_id }}/withdraw/review">
+  <table class="legacy-form">
+    <tr>
+      <td>FROM ACCOUNT:</td>
+      <td>
+        <select name="from_acct">
+          {% for account in accounts %}<option value="{{ account.id }}">{{ account.account_type }} {{ account.masked_number }} / ${{ '%.2f'|format(account.balance) }}</option>{% endfor %}
+        </select>
+      </td>
+    </tr>
+    <tr><td>WITHDRAWAL AMOUNT:</td><td><input type="text" name="amount" value="20.00" size="12"></td></tr>
+    <tr><td></td><td><input type="submit" name="cmd_71" value="REVIEW WITHDRAWAL"></td></tr>
+  </table>
+</form>
+{% endblock %}

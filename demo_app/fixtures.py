@@ -1,5 +1,13 @@
 """Synthetic, deterministic LegacyBank fixtures. No real PII is used."""
 
+OPERATORS = {
+    "OP100": {
+        "pin": "2468",
+        "display_name": "DEMO OPERATOR",
+        "role": "MEMBER SERVICES",
+    }
+}
+
 MEMBERS = [
     {
         "member_id": "100001",
@@ -42,6 +50,45 @@ MEMBERS = [
         "status": "ACTIVE",
         "branch": "033",
         "scenario": "unexpected_dialog",
+    },
+]
+
+PROFILES = [
+    {
+        "member_id": "100001",
+        "phone": "(555) 010-1001",
+        "email": "sample.a@example.invalid",
+        "address": "101 Demo Street, Training City, VA 24000",
+    },
+    {
+        "member_id": "100002",
+        "phone": "(555) 010-1002",
+        "email": "sample.b@example.invalid",
+        "address": "102 Demo Street, Training City, VA 24000",
+    },
+    {
+        "member_id": "100003",
+        "phone": "(555) 010-1003",
+        "email": "sample.c@example.invalid",
+        "address": "103 Demo Street, Training City, VA 24000",
+    },
+    {
+        "member_id": "100004",
+        "phone": "(555) 010-1004",
+        "email": "sample.d@example.invalid",
+        "address": "104 Demo Street, Training City, VA 24000",
+    },
+    {
+        "member_id": "100005",
+        "phone": "(555) 010-1005",
+        "email": "sample.e@example.invalid",
+        "address": "105 Demo Street, Training City, VA 24000",
+    },
+    {
+        "member_id": "100006",
+        "phone": "(555) 010-1006",
+        "email": "sample.f@example.invalid",
+        "address": "106 Demo Street, Training City, VA 24000",
     },
 ]
 

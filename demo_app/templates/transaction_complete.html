@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Transaction Complete{% endblock %}
+{% block content %}
+<h1>TRANSACTION COMPLETE</h1>
+<table class="detail-table">
+  <tr><td>MEMBER:</td><td>{{ member.member_id }}</td></tr>
+  <tr><td>TYPE:</td><td>{{ transaction_type }}</td></tr>
+  <tr><td>AMOUNT:</td><td>${{ '%.2f'|format(amount) }}</td></tr>
+  <tr><td>CONFIRMATION:</td><td>{{ confirmation }}</td></tr>
+  <tr><td>STATUS:</td><td>COMPLETE</td></tr>
+</table>
+<a class="legacy-link" href="/members/{{ member.member_id }}/accounts">RETURN TO ACCOUNTS</a>
+{% endblock %}

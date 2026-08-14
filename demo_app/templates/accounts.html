@@ -2,28 +2,41 @@
 {% block title %}Account Servicing{% endblock %}
 {% block content %}
 <h1>ACCOUNT SERVICING</h1>
-<div>MEMBER: {{ member.member_id }} / {{ member.name }}</div>
+<div class="member-line">MEMBER: {{ member.member_id }} / {{ member.name }}</div>
 
 {% if show_override_dialog %}
 <div class="modal-shade">
   <div class="legacy-dialog">
     <div class="dialog-title">SUPERVISOR OVERRIDE REQUIRED</div>
     <p>Additional servicing review is required before account information can be used.</p>
-    <div class="dialog-actions"><button>CONTINUE</button><button>CANCEL</button></div>
+    <div class="dialog-actions">
+      <form method="post" action="/members/{{ member.member_id }}/override">
+        <input type="hidden" name="decision" value="continue">
+        <button type="submit">CONTINUE</button>
+      </form>
+      <form method="post" action="/members/{{ member.member_id }}/override">
+        <input type="hidden" name="decision" value="cancel">
+        <button type="submit">CANCEL</button>
+      </form>
+    </div>
   </div>
 </div>
 {% endif %}
 
 <iframe src="/members/{{ member.member_id }}/accounts/frame" name="acct_view" class="account-frame"></iframe>
 
-<table class="nav-table">
+<table class="nav-table servicing-actions">
   <tr>
     <td>ADD SUB-ACCOUNT</td>
-    <td>
-      <form method="get" action="/members/{{ member.member_id }}/accounts/new">
-        <button name="cmd_31" class="weak-button">&gt;</button>
-      </form>
-    </td>
+    <td><form method="get" action="/members/{{ member.member_id }}/accounts/new"><button name="cmd_31" class="weak-button">&gt;</button></form></td>
+  </tr>
+  <tr>
+    <td>TRANSFER FUNDS</td>
+    <td><form method="get" action="/members/{{ member.member_id }}/transfer"><button name="cmd_32" class="weak-button">&gt;</button></form></td>
+  </tr>
+  <tr>
+    <td>CASH WITHDRAWAL</td>
+    <td><form method="get" action="/members/{{ member.member_id }}/withdraw"><button name="cmd_33" class="weak-button">&gt;</button></form></td>
   </tr>
 </table>
 {% endblock %}

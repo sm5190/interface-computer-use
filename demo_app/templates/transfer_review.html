@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Review Transfer{% endblock %}
+{% block content %}
+<h1>REVIEW FUNDS TRANSFER</h1>
+<table class="detail-table">
+  <tr><td>MEMBER:</td><td>{{ member.member_id }}</td></tr>
+  <tr><td>FROM:</td><td>{{ source.account_type }} {{ source.masked_number }}</td></tr>
+  <tr><td>TO:</td><td>{{ destination.account_type }} {{ destination.masked_number }}</td></tr>
+  <tr><td>AMOUNT:</td><td>${{ '%.2f'|format(pending.amount) }}</td></tr>
+</table>
+<div class="danger-box">HIGH-RISK ACTION: Confirming this transfer will immediately move funds between accounts.</div>
+<div class="review-actions">
+  <a class="legacy-link" href="/members/{{ member.member_id }}/transfer">BACK</a>
+  <form method="post" action="/members/{{ member.member_id }}/transfer/confirm">
+    <input type="submit" name="cmd_98" value="F12 CONFIRM TRANSFER">
+  </form>
+</div>
+{% endblock %}

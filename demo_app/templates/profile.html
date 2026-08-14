@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Member Profile{% endblock %}
+{% block content %}
+<h1>MEMBER PROFILE</h1>
+<table class="detail-table">
+  <tr><td>MEMBER NUMBER:</td><td>{{ member.member_id }}</td></tr>
+  <tr><td>NAME:</td><td>{{ member.name }}</td></tr>
+  <tr><td>PHONE:</td><td>{{ profile.phone }}</td></tr>
+  <tr><td>EMAIL:</td><td>{{ profile.email }}</td></tr>
+  <tr><td>MAILING ADDRESS:</td><td>{{ profile.address }}</td></tr>
+</table>
+<div class="notice">All values on this page are synthetic demonstration data.</div>
+<a class="legacy-link" href="/members/{{ member.member_id }}">RETURN TO MEMBER</a>
+{% endblock %}
