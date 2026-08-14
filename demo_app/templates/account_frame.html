@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><link rel="stylesheet" href="/static/legacy.css"></head>
+<body class="frame-body">
+  <div class="frame-title">ACCOUNT DETAIL FRAME</div>
+  {% if delayed %}<div class="tiny-note">DELAY RECOVERED</div>{% endif %}
+  <table class="accounts-table">
+    <tr><th>TYPE</th><th>ACCOUNT</th><th>CURRENT BALANCE</th></tr>
+    {% for account in accounts %}
+    <tr>
+      <td>{{ account.account_type }}</td>
+      <td>{{ account.masked_number }}</td>
+      <td>${{ '%.2f'|format(account.balance) }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% if accounts|selectattr('account_type', 'equalto', 'SAVINGS')|list|length == 0 %}
+  <div class="business-message">NO SAVINGS ACCOUNT ON FILE</div>
+  {% endif %}
+</body>
+</html>

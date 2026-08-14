@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Member Maintenance{% endblock %}
+{% block content %}
+<h1>MEMBER MAINTENANCE</h1>
+{% if error %}<div class="error-message">{{ error }}</div>{% endif %}
+<form method="post" action="/members/search">
+  <table class="legacy-form">
+    <tr>
+      <td class="field-caption">MEMBER NUMBER:</td>
+      <td><input type="text" name="f_14" size="18" maxlength="6" value="{{ entered or '' }}"></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><input type="submit" name="cmd_8" value="F8 SEARCH"></td>
+    </tr>
+  </table>
+</form>
+<div class="statusline">STATUS: READY</div>
+{% endblock %}

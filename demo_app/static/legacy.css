@@ -1,0 +1,54 @@
+:root {
+  font-family: "Courier New", Courier, monospace;
+  background: #d7d7d7;
+  color: #101010;
+}
+body { margin: 0; padding: 28px; background: #d7d7d7; }
+.terminal-shell {
+  max-width: 920px;
+  margin: 0 auto;
+  background: #efefdf;
+  border: 3px ridge #777;
+  min-height: 560px;
+  box-shadow: 3px 3px 0 #777;
+}
+.topbar {
+  background: #0b2b60;
+  color: white;
+  padding: 10px 14px;
+  font-weight: bold;
+  letter-spacing: .06em;
+}
+.topbar span { float: right; font-weight: normal; }
+h1 { font-size: 20px; border-bottom: 2px solid #555; margin: 22px 22px 16px; padding-bottom: 6px; }
+.notice, .error-message, .warning-box, .business-message, .statusline { margin: 16px 22px; padding: 10px; }
+.notice { border: 1px solid #555; background: #fff9c9; }
+.error-message { border: 2px solid #8a0000; background: #ffe5e5; font-weight: bold; }
+.warning-box { border: 2px solid #8a6500; background: #fff3c4; font-weight: bold; }
+.business-message { border: 1px dashed #444; background: #fafafa; font-weight: bold; }
+.statusline { border-top: 1px solid #777; margin-top: 42px; }
+.legacy-form, .detail-table, .nav-table, .accounts-table { border-collapse: collapse; margin: 20px 22px; }
+.legacy-form td, .detail-table td, .nav-table td { padding: 8px 12px; border: 1px solid #888; }
+.accounts-table { width: calc(100% - 20px); margin: 10px; }
+.accounts-table th, .accounts-table td { border: 1px solid #777; padding: 8px; text-align: left; }
+input, select, button { font-family: inherit; font-size: 15px; }
+input[type="submit"], button, .legacy-link {
+  border: 2px outset #aaa;
+  background: #e4e4e4;
+  color: #111;
+  padding: 5px 12px;
+  text-decoration: none;
+  cursor: pointer;
+}
+.weak-button { min-width: 44px; }
+.footerkeys { margin-top: 50px; padding: 9px 14px; border-top: 2px solid #666; background: #cfcfc2; }
+.account-frame { display: block; width: calc(100% - 44px); height: 240px; margin: 20px 22px; border: 2px inset #777; background: white; }
+.frame-body { background: white; padding: 4px; }
+.frame-title { font-weight: bold; margin: 8px 10px; }
+.tiny-note { font-size: 10px; margin-left: 10px; }
+.review-actions { margin: 24px 22px; display: flex; justify-content: space-between; align-items: center; }
+.review-actions form { margin: 0; }
+.modal-shade { position: fixed; inset: 0; background: rgba(0,0,0,.28); display: flex; align-items: center; justify-content: center; z-index: 10; }
+.legacy-dialog { width: 470px; background: #efefdf; border: 4px ridge #777; box-shadow: 7px 7px 0 rgba(0,0,0,.35); padding: 14px; }
+.dialog-title { background: #0b2b60; color: white; padding: 6px; font-weight: bold; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: 10px; }

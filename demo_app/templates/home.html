@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}LegacyBank Operator Session{% endblock %}
+{% block content %}
+<h1>OPERATOR ACCESS</h1>
+<div class="notice">SYNTHETIC DEMONSTRATION ENVIRONMENT. NO REAL CUSTOMER DATA.</div>
+<form method="post" action="/session/start">
+  <table class="legacy-form">
+    <tr><td>ENVIRONMENT:</td><td>TRAINING / LOCAL</td></tr>
+    <tr><td>OPERATOR:</td><td>DEMO-OPERATOR</td></tr>
+    <tr><td></td><td><input type="submit" name="cmd_1" value="START OPERATOR SESSION"></td></tr>
+  </table>
+</form>
+{% endblock %}

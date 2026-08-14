@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}Heritage Core Banking{% endblock %}</title>
+  <link rel="stylesheet" href="/static/legacy.css">
+</head>
+<body>
+  <div class="terminal-shell">
+    <div class="topbar">HERITAGE CORE BANKING SYSTEM <span>VERSION 7.4</span></div>
+    {% block content %}{% endblock %}
+    <div class="footerkeys">F1 HELP &nbsp;&nbsp;&nbsp; F3 CLEAR &nbsp;&nbsp;&nbsp; F12 EXIT</div>
+  </div>
+</body>
+</html>

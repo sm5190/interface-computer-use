@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Account Created{% endblock %}
+{% block content %}
+<h1>ACCOUNT CREATED</h1>
+<table class="detail-table">
+  <tr><td>MEMBER:</td><td>{{ member.member_id }}</td></tr>
+  <tr><td>CONFIRMATION NUMBER:</td><td>{{ confirmation }}</td></tr>
+  <tr><td>STATUS:</td><td>COMPLETE</td></tr>
+</table>
+<a class="legacy-link" href="/members/{{ member.member_id }}/accounts">RETURN TO ACCOUNTS</a>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Account Servicing{% endblock %}
+{% block content %}
+<h1>ACCOUNT SERVICING</h1>
+<div>MEMBER: {{ member.member_id }} / {{ member.name }}</div>
+
+{% if show_override_dialog %}
+<div class="modal-shade">
+  <div class="legacy-dialog">
+    <div class="dialog-title">SUPERVISOR OVERRIDE REQUIRED</div>
+    <p>Additional servicing review is required before account information can be used.</p>
+    <div class="dialog-actions"><button>CONTINUE</button><button>CANCEL</button></div>
+  </div>
+</div>
+{% endif %}
+
+<iframe src="/members/{{ member.member_id }}/accounts/frame" name="acct_view" class="account-frame"></iframe>
+
+<table class="nav-table">
+  <tr>
+    <td>ADD SUB-ACCOUNT</td>
+    <td>
+      <form method="get" action="/members/{{ member.member_id }}/accounts/new">
+        <button name="cmd_31" class="weak-button">&gt;</button>
+      </form>
+    </td>
+  </tr>
+</table>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Review New Sub-Account{% endblock %}
+{% block content %}
+<h1>REVIEW NEW SUB-ACCOUNT</h1>
+<table class="detail-table">
+  <tr><td>MEMBER:</td><td>{{ member.member_id }}</td></tr>
+  <tr><td>ACCOUNT TYPE:</td><td>{{ pending.account_type }}</td></tr>
+  <tr><td>NICKNAME:</td><td>{{ pending.nickname }}</td></tr>
+  <tr><td>STATEMENT DELIVERY:</td><td>{{ pending.statement_delivery }}</td></tr>
+  <tr><td>INITIAL DEPOSIT:</td><td>${{ '%.2f'|format(pending.initial_deposit) }}</td></tr>
+</table>
+<div class="warning-box">WARNING: Creating this account will modify member records.</div>
+<div class="review-actions">
+  <a class="legacy-link" href="/members/{{ member.member_id }}/accounts/new">BACK</a>
+  <form method="post" action="/members/{{ member.member_id }}/accounts/new/confirm">
+    <input type="submit" name="cmd_99" value="F12 COMMIT">
+  </form>
+</div>
+{% endblock %}

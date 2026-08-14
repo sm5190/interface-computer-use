@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}New Sub-Account{% endblock %}
+{% block content %}
+<h1>NEW SUB-ACCOUNT</h1>
+<div>MEMBER: {{ member.member_id }}</div>
+{% if error %}<div class="error-message">{{ error }}</div>{% endif %}
+<form method="post" action="/members/{{ member.member_id }}/accounts/new/review">
+  <table class="legacy-form">
+    <tr>
+      <td>ACCOUNT TYPE:</td>
+      <td><select name="acct_type"><option value="SAVINGS">SAVINGS</option><option value="CHECKING">CHECKING</option></select></td>
+    </tr>
+    <tr><td>ACCOUNT NICKNAME:</td><td><input type="text" name="nick_27" size="24"></td></tr>
+    <tr>
+      <td>STATEMENT DELIVERY:</td>
+      <td>
+        <input type="radio" name="stmt_mode" value="PAPER" checked> PAPER
+        <input type="radio" name="stmt_mode" value="ELECTRONIC"> ELECTRONIC
+      </td>
+    </tr>
+    <tr><td>INITIAL DEPOSIT:</td><td><input type="text" name="dep_amt" size="12" value="0.00"></td></tr>
+    <tr><td></td><td><input type="submit" name="cmd_41" value="CONTINUE"></td></tr>
+  </table>
+</form>
+{% endblock %}

@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+
+# Virtual environments
+.venv/
+
+# Environment / secrets
+.env
+.env.local
+
+# Tool caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Runtime database
+demo_app/*.db
+
+# Development evidence
+evidence/dev/*
+!evidence/dev/.gitkeep
+
+# Generated capabilities while iterating
+artifacts/generated/*
+!artifacts/generated/.gitkeep
+
+# Playwright outputs added later
+test-results/
+playwright-report/

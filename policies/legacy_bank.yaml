@@ -1,0 +1,20 @@
+application: legacy-bank
+allowed_origins:
+  - http://127.0.0.1:8000
+allowed_routes:
+  - /members*
+
+actions:
+  navigate: allow
+  read: allow
+  extract: allow
+  input_text: allow
+  select_option: allow
+  press_key: allow
+  scroll: allow
+  click: conditional
+
+risk_policy:
+  safe: autonomous
+  reversible_write: autonomous_with_checkpoint
+  irreversible: human_approval
