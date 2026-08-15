@@ -213,6 +213,8 @@ def create_subaccount(
             """,
             (member_id, account_type, nickname, statement_delivery, initial_deposit),
         )
+        if cursor.lastrowid is None:
+            raise RuntimeError("Failed to create subaccount")
         row_id = int(cursor.lastrowid)
     return f"C-{row_id:07d}"
 
