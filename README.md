@@ -1,44 +1,33 @@
 # Interface Computer Use
 
-Interface.ai SWE take-home reference implementation.
+Interface.ai SWE take-home implementation of a computer-use capability automation system.
 
-## Current milestone: LegacyBank proxy target
+The system is designed around one central separation:
 
-LegacyBank is a local, synthetic, intentionally legacy-style banking operations console used as the live UI target for the computer-use system.
+> Discovery is probabilistic. Capabilities are declarative. Replay is deterministic. Policy is authoritative. Humans retain control.
 
-### Run
+## Current milestone
 
-```powershell
+The repository currently includes **LegacyBank**, a local, synthetic, intentionally legacy-style banking operations console used as the live UI target for the computer-use system.
+
+The computer-use runtime will add:
+
+1. LLM-driven workflow discovery.
+2. Typed/versioned capability artifacts.
+3. Deterministic replay with no LLM decisions.
+4. Explicit safety and policy enforcement.
+5. Structured runtime outcomes and failures.
+6. Same-session human approval and takeover.
+7. Structured logs, screenshots, and Playwright traces.
+
+## Requirements
+
+- Python 3.12
+- uv
+
+## Development setup
+
+Install the Python environment:
+
+```bash
 uv sync
-uv run python -m demo_app.app
-```
-
-Open `http://127.0.0.1:8000`.
-
-Synthetic training login:
-
-- Operator ID: `OP100`
-- PIN: `2468`
-
-All member/account/profile data is synthetic.
-
-### Useful fixtures
-
-- `100001`: normal member
-- `100002`: normal member with different balances
-- `100003`: no savings account
-- `100004`: first account-frame load is delayed once
-- `100005`: permission denied
-- `100006`: supervisor-override dialog for human-handoff testing
-- `999999`: member not found
-
-### Target workflows
-
-- Lookup member savings balance
-- Open a new sub-account and reach high-risk confirmation
-- Transfer funds between a member's accounts and reach high-risk confirmation
-- Withdraw funds and reach high-risk confirmation
-- Open member profile
-- Resolve a synthetic supervisor-override dialog
-
-The final computer-use automation will enforce policy before high-risk confirmation actions. The target application itself intentionally permits those actions so policy behavior can be demonstrated externally.

@@ -25,6 +25,7 @@ def connect() -> sqlite3.Connection:
 def init_db() -> None:
     path = db_path()
     path.parent.mkdir(parents=True, exist_ok=True)
+
     with connect() as conn:
         conn.executescript(
             """
@@ -75,30 +76,86 @@ def init_db() -> None:
             );
             """
         )
-        member_count = conn.execute("SELECT COUNT(*) FROM members").fetchone()[0]
-        if member_count == 0:
-            conn.executemany(
-                """
-                INSERT INTO members(member_id, name, status, branch, scenario)
-                VALUES(:member_id, :name, :status, :branch, :scenario)
-                """,
-                MEMBERS,
-            )
-            conn.executemany(
-                """
-                INSERT INTO profiles(member_id, phone, email, address)
-                VALUES(:member_id, :phone, :email, :address)
-                """,
-                PROFILES,
-            )
-            conn.executemany(
-                """
-                INSERT INTO accounts(member_id, account_type, masked_number, balance)
-                VALUES(:member_id, :account_type, :masked_number, :balance)
-                """,
-                ACCOUNTS,
-            )
 
+        # Members and profiles have member_id primary keys, so they can be
+        # safely backfilled without duplicating existing fixture records.
+        conn.executemany(
+            """
+            INSERT OR IGNORE INTO members(
+                member_id,
+                name,
+                status,
+                branch,
+                scenario
+            )
+            VALUES(
+                :member_id,
+                :name,
+                :status,
+                :branch,
+                :scenario
+            )
+            """,
+            MEMBERS,
+        )
+
+        conn.executemany(
+            """
+            INSERT OR IGNORE INTO profiles(
+                member_id,
+                phone,
+                email,
+                address
+            )
+            VALUES(
+                :member_id,
+                :phone,
+                :email,
+                :address
+            )
+            """,
+            PROFILES,
+        )
+
+        # Accounts use an auto-increment ID, so INSERT OR IGNORE alone would
+        # not prevent duplicate seeded accounts. Check the stable synthetic
+        # account identity explicitly.
+        for account in ACCOUNTS:
+            existing = conn.execute(
+                """
+                SELECT 1
+                FROM accounts
+                WHERE member_id = ?
+                  AND account_type = ?
+                  AND masked_number = ?
+                """,
+                (
+                    account["member_id"],
+                    account["account_type"],
+                    account["masked_number"],
+                ),
+            ).fetchone()
+
+            if existing is None:
+                conn.execute(
+                    """
+                    INSERT INTO accounts(
+                        member_id,
+                        account_type,
+                        masked_number,
+                        balance
+                    )
+                    VALUES (?, ?, ?, ?)
+                    """,
+                    (
+                        account["member_id"],
+                        account["account_type"],
+                        account["masked_number"],
+                        account["balance"],
+                    ),
+                )
+
+        conn.commit()
 
 def get_member(member_id: str) -> dict[str, Any] | None:
     with connect() as conn:

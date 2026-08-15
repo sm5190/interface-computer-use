@@ -22,6 +22,33 @@ def client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         yield test_client
 
 
+
+def test_init_db_backfills_missing_profile_fixtures(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        database_path = tmp_path / "legacybank-backfill-test.db"
+        monkeypatch.setenv("LEGACYBANK_DB_PATH", str(database_path))
+
+        db.init_db()
+
+        assert db.get_member("100002") is not None
+        assert db.get_profile("100002") is not None
+
+        with db.connect() as conn:
+            conn.execute("DELETE FROM profiles")
+            conn.commit()
+
+        assert db.get_member("100002") is not None
+        assert db.get_profile("100002") is None
+
+        db.init_db()
+
+        profile = db.get_profile("100002")
+
+        assert profile is not None
+        assert profile["email"] == "sample.b@example.invalid"
+
 def test_login_rejects_invalid_credentials(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setenv("LEGACYBANK_DB_PATH", str(tmp_path / "legacybank-login-test.db"))
     with TestClient(app) as test_client:
