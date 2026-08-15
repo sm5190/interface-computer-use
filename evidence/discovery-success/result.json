@@ -1,0 +1,18 @@
+{
+  "run_id": "discovery-20260815-154033-e81e5631",
+  "status": "SUCCESS",
+  "code": null,
+  "capability_id": null,
+  "capability_version": null,
+  "outputs": {
+    "savings_balance": "$8456.20"
+  },
+  "current_step": null,
+  "expected": null,
+  "observed": null,
+  "evidence": [
+    "evidence\\dev\\discovery-20260815-154033-e81e5631\\trace.zip"
+  ],
+  "duration_ms": 108953,
+  "llm_calls": 10
+}

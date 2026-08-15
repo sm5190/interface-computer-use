@@ -123,8 +123,12 @@ class ActionProposal(DomainModel):
     action: ActionSpec
     target: TargetSpec | None = None
 
+    # Only EXTRACT actions declare where the extracted value
+    # should be stored in the discovery output state.
+    output: str | None = None
+
     @model_validator(mode="after")
-    def validate_target_requirement(self) -> ActionProposal:
+    def validate_action_contract(self) -> ActionProposal:
         targeted_actions = {
             ActionType.CLICK,
             ActionType.INPUT_TEXT,
@@ -136,6 +140,22 @@ class ActionProposal(DomainModel):
         if self.action.type in targeted_actions and self.target is None:
             raise ValueError(
                 f"{self.action.type} requires target"
+            )
+
+        if (
+            self.action.type == ActionType.EXTRACT
+            and not self.output
+        ):
+            raise ValueError(
+                "extract action requires output"
+            )
+
+        if (
+            self.action.type != ActionType.EXTRACT
+            and self.output is not None
+        ):
+            raise ValueError(
+                "only extract actions may declare output"
             )
 
         return self

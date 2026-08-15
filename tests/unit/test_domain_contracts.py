@@ -302,3 +302,12 @@ def test_extract_step_requires_output_binding() -> None:
                 reversible=True,
             ),
         )
+
+def test_extract_action_proposal_requires_output() -> None:
+    with pytest.raises(ValidationError):
+        ActionProposal(
+            action=ActionSpec(
+                type=ActionType.EXTRACT
+            ),
+            target=member_input_target(),
+        )
