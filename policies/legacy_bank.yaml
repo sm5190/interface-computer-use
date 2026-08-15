@@ -1,20 +1,61 @@
 application: legacy-bank
+
 allowed_origins:
   - http://127.0.0.1:8000
+  - http://localhost:8000
+
 allowed_routes:
+  - /
+  - /login
+  - /session/start
+  - /logout
+  - /help
   - /members*
 
 actions:
   navigate: allow
-  read: allow
-  extract: allow
+  click: conditional
   input_text: allow
   select_option: allow
-  press_key: allow
+  press_key: conditional
+  read: allow
+  extract: allow
   scroll: allow
-  click: conditional
+  wait: allow
+
+goal_policy:
+  max_steps: 30
+  max_timeout_seconds: 300
+  forbidden_phrases:
+    - bypass authentication
+    - disable security
+    - exfiltrate credentials
+    - steal credentials
 
 risk_policy:
   safe: autonomous
   reversible_write: autonomous_with_checkpoint
   irreversible: human_approval
+
+  irreversible_click_routes:
+    - /members/*/accounts/new/review
+    - /members/*/transfer/review
+    - /members/*/withdraw/review
+
+confidence_policy:
+  low_risk_min_autonomous: 0.75
+  high_risk: human_approval_always
+  below_minimum: human_takeover
+
+redaction:
+  sensitive_input_fields:
+    - member_id
+    - account_number
+
+  never_persist:
+    - api_key
+    - access_token
+    - authorization
+    - password
+    - op_pin
+    - session_cookie
