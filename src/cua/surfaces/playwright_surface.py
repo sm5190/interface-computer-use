@@ -463,6 +463,73 @@ class PlaywrightSurface:
             f"No frame URL contains {frame_url_contains!r}"
         )
 
+    def playwright_frames(
+        self,
+        *,
+        readiness_timeout_ms: int = 1_000,
+    ) -> list[Frame]:
+        """
+        Return the current browser frame tree after giving newly
+        rendered iframe elements a bounded opportunity to attach.
+
+        This method is intentionally not part of SurfaceSession.
+        Generic domain and replay code must not depend on
+        Playwright Frame objects.
+        """
+
+        page = self._require_page()
+
+        iframe_count = page.locator(
+            "iframe, frame"
+        ).count()
+
+        if iframe_count == 0:
+            return list(page.frames)
+
+        deadline = (
+            datetime.now(UTC).timestamp()
+            + readiness_timeout_ms / 1000
+        )
+
+        while True:
+            frames = list(page.frames)
+
+            # page.frames includes the main frame, so a page with
+            # one iframe should expose at least two Frame objects.
+            expected_frame_count = 1 + iframe_count
+
+            if len(frames) >= expected_frame_count:
+                break
+
+            if (
+                datetime.now(UTC).timestamp()
+                >= deadline
+            ):
+                break
+
+            # Very short bounded polling is used only to let
+            # Playwright expose a frame already declared by the DOM.
+            page.wait_for_timeout(25)
+
+        frames = list(page.frames)
+
+        for frame in frames:
+            if frame == page.main_frame:
+                continue
+
+            try:
+                frame.wait_for_load_state(
+                    "domcontentloaded",
+                    timeout=readiness_timeout_ms,
+                )
+            except Exception:
+                # Grounding remains responsible for deciding whether
+                # the target exists. Frame readiness must not turn
+                # into an unbounded wait.
+                pass
+
+        return frames
+
     def control_handle(
         self,
         control_id: str,

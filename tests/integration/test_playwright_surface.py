@@ -7,6 +7,7 @@ import sys
 import time
 from collections.abc import Iterator
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import httpx
 import pytest
@@ -14,6 +15,20 @@ import pytest
 from cua.domain import (
     ActionSpec,
     ActionType,
+    AttributeStrategy,
+    CheckpointSpec,
+    CheckpointType,
+    ResolutionStrategyKind,
+    SemanticStrategy,
+    TargetSpec,
+    TextAnchorStrategy,
+)
+from cua.grounding import (
+    CheckpointContext,
+    CheckpointEvaluator,
+    PlaywrightGroundingBackend,
+    TargetAmbiguous,
+    TargetResolver,
 )
 from cua.surfaces import PlaywrightSurface
 
@@ -410,3 +425,263 @@ def test_surface_captures_playwright_trace(
 
     assert Path(output).exists()
     assert Path(output).stat().st_size > 0
+
+def test_grounding_falls_back_to_stable_attribute(
+    surface: PlaywrightSurface,
+    live_legacy_bank: str,
+) -> None:
+    _login(surface, live_legacy_bank)
+
+    resolver = TargetResolver(
+        PlaywrightGroundingBackend(surface)
+    )
+
+    target = TargetSpec(
+        logical_name="member_number_input",
+        strategies=[
+            SemanticStrategy(
+                role="textbox",
+                accessible_name="MEMBER NUMBER",
+            ),
+            AttributeStrategy(
+                attribute="name",
+                value="f_14",
+            ),
+            TextAnchorStrategy(
+                anchor="MEMBER NUMBER:",
+                relation="nearest_input_right",
+            ),
+        ],
+    )
+
+    resolved = resolver.resolve(target)
+
+    assert (
+        resolved.strategy_kind
+        == ResolutionStrategyKind.ATTRIBUTE
+    )
+
+    assert resolved.confidence == 0.95
+
+    surface.execute(
+        ActionSpec(
+            type=ActionType.INPUT_TEXT,
+            value="100001",
+        ),
+        target_handle=resolved.surface_handle,
+    )
+
+    extracted = surface.execute(
+        ActionSpec(
+            type=ActionType.EXTRACT
+        ),
+        target_handle=resolved.surface_handle,
+    )
+
+    assert extracted.value == "100001"
+
+
+def test_grounding_uses_text_anchor_for_weak_button(
+    surface: PlaywrightSurface,
+    live_legacy_bank: str,
+) -> None:
+    _login(surface, live_legacy_bank)
+    _open_member(surface, "100001")
+
+    resolver = TargetResolver(
+        PlaywrightGroundingBackend(surface)
+    )
+
+    target = TargetSpec(
+        logical_name="accounts_navigation",
+        strategies=[
+            SemanticStrategy(
+                role="button",
+                accessible_name="ACCOUNTS",
+            ),
+            TextAnchorStrategy(
+                anchor="ACCOUNTS",
+                relation="same_row_control",
+            ),
+        ],
+    )
+
+    resolved = resolver.resolve(target)
+
+    assert (
+        resolved.strategy_kind
+        == ResolutionStrategyKind.TEXT_ANCHOR
+    )
+
+    assert resolved.confidence == 0.85
+
+    surface.execute(
+        ActionSpec(
+            type=ActionType.CLICK
+        ),
+        target_handle=resolved.surface_handle,
+    )
+
+    assert urlsplit(surface.current_url).path == (
+    "/members/100001/accounts"
+)
+
+
+def test_grounding_rejects_ambiguous_semantic_match(
+    surface: PlaywrightSurface,
+    live_legacy_bank: str,
+) -> None:
+    _login(surface, live_legacy_bank)
+    _open_member(surface, "100001")
+
+    resolver = TargetResolver(
+        PlaywrightGroundingBackend(surface)
+    )
+
+    target = TargetSpec(
+        logical_name="generic_arrow_button",
+        strategies=[
+            SemanticStrategy(
+                role="button",
+                accessible_name=">",
+            )
+        ],
+    )
+
+    with pytest.raises(TargetAmbiguous) as error:
+        resolver.resolve(target)
+
+    assert error.value.candidate_count == 2
+
+def test_grounding_extracts_savings_balance_from_iframe(
+    surface: PlaywrightSurface,
+    live_legacy_bank: str,
+) -> None:
+    _login(surface, live_legacy_bank)
+    _open_member(surface, "100001")
+
+    surface.execute(
+        ActionSpec(
+            type=ActionType.CLICK
+        ),
+        target_handle=surface.playwright_locator(
+            "button[name='cmd_22']"
+        ),
+    )
+
+    resolver = TargetResolver(
+        PlaywrightGroundingBackend(surface)
+    )
+
+    balance_target = TargetSpec(
+        logical_name="savings_balance",
+        strategies=[
+            TextAnchorStrategy(
+                anchor="SAVINGS",
+                relation="same_row_last_cell",
+            )
+        ],
+    )
+
+    resolved = resolver.resolve(
+        balance_target
+    )
+
+    assert (
+        resolved.strategy_kind
+        == ResolutionStrategyKind.TEXT_ANCHOR
+    )
+
+    assert (
+        "accounts/frame"
+        in resolved.evidence["frame_url"]
+    )
+
+    result = surface.execute(
+        ActionSpec(
+            type=ActionType.EXTRACT
+        ),
+        target_handle=resolved.surface_handle,
+    )
+
+    assert result.value == "$8431.20"
+
+
+def test_checkpoint_evaluator_verifies_live_state(
+    surface: PlaywrightSurface,
+    live_legacy_bank: str,
+) -> None:
+    _login(surface, live_legacy_bank)
+
+    resolver = TargetResolver(
+        PlaywrightGroundingBackend(surface)
+    )
+
+    evaluator = CheckpointEvaluator(
+        surface=surface,
+        resolver=resolver,
+    )
+
+    member_input = TargetSpec(
+        logical_name="member_number_input",
+        strategies=[
+            AttributeStrategy(
+                attribute="name",
+                value="f_14",
+            )
+        ],
+    )
+
+    resolved = resolver.resolve(member_input)
+
+    surface.execute(
+        ActionSpec(
+            type=ActionType.INPUT_TEXT,
+            value="100001",
+        ),
+        target_handle=resolved.surface_handle,
+    )
+
+    value_checkpoint = evaluator.evaluate(
+        CheckpointSpec(
+            type=CheckpointType.CONTROL_VALUE,
+            target=member_input,
+            expected="100001",
+        )
+    )
+
+    assert value_checkpoint.passed is True
+
+    _open_member(surface, "100001")
+
+    text_checkpoint = evaluator.evaluate(
+        CheckpointSpec(
+            type=CheckpointType.TEXT_PRESENT,
+            value="MEMBER INQUIRY",
+        )
+    )
+
+    assert text_checkpoint.passed is True
+
+    url_checkpoint = evaluator.evaluate(
+        CheckpointSpec(
+            type=CheckpointType.URL_MATCHES,
+            pattern="/members/100001",
+        )
+    )
+
+    assert url_checkpoint.passed is True
+
+    output_checkpoint = evaluator.evaluate(
+        CheckpointSpec(
+            type=CheckpointType.OUTPUT_EXTRACTABLE,
+            output="savings_balance",
+        ),
+        context=CheckpointContext(
+            outputs={
+                "savings_balance": "$8431.20"
+            }
+        ),
+    )
+
+    assert output_checkpoint.passed is True

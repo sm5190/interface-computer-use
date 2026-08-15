@@ -288,3 +288,17 @@ def test_resolved_target_excludes_runtime_surface_handle() -> None:
 
     assert resolved.surface_handle is handle
     assert "surface_handle" not in resolved.model_dump()
+
+def test_extract_step_requires_output_binding() -> None:
+    with pytest.raises(ValidationError):
+        CapabilityStep(
+            id="extract-balance",
+            action=ActionSpec(
+                type=ActionType.EXTRACT
+            ),
+            target=member_input_target(),
+            risk=RiskSpec(
+                level=RiskLevel.SAFE,
+                reversible=True,
+            ),
+        )
