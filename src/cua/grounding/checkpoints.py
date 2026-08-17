@@ -195,12 +195,14 @@ class CheckpointEvaluator:
             resolved = self._resolver.resolve(
                 checkpoint.target
             )
+
         except TargetNotFound:
             return CheckpointResult(
                 passed=False,
                 expected=checkpoint.expected,
                 observed="target not found",
             )
+
         except TargetAmbiguous as exc:
             return CheckpointResult(
                 passed=False,
@@ -220,13 +222,11 @@ class CheckpointEvaluator:
         observed = result.value
         expected = checkpoint.expected
 
-        passed = (
-            str(observed).strip()
-            == str(expected).strip()
-        )
-
         return CheckpointResult(
-            passed=passed,
+            passed=(
+                str(observed).strip()
+                == str(expected).strip()
+            ),
             expected=expected,
             observed=observed,
         )
