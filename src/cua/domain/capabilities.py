@@ -98,6 +98,11 @@ class BusinessOutcomeRule(DomainModel):
     detect: CheckpointSpec
     terminal: bool = True
 
+class HardFailureRule(DomainModel):
+    code: str
+    detect: CheckpointSpec
+    terminal: bool = True
+
 
 class CapabilityPolicy(DomainModel):
     risk: Literal[
@@ -128,6 +133,10 @@ class CapabilityArtifact(DomainModel):
     steps: list[CapabilityStep] = Field(min_length=1)
 
     business_outcomes: list[BusinessOutcomeRule] = Field(
+        default_factory=list
+    )
+
+    hard_failures: list[HardFailureRule] = Field(
         default_factory=list
     )
 

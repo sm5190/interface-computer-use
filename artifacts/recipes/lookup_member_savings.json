@@ -1,0 +1,90 @@
+{
+  "capability": {
+    "id": "lookup_member_savings",
+    "version": "1.0.0",
+    "name": "Lookup Member Savings Balance",
+    "description": "Return the current savings balance for a requested member"
+  },
+
+  "application": {
+    "family": "legacy-bank-core",
+    "surface": "browser",
+    "entry_point": "/members",
+    "compatibility": {}
+  },
+
+  "inputs": {
+    "member_id": {
+      "definition": {
+        "type": "string",
+        "required": true,
+        "sensitive": true,
+        "pattern": "^[0-9]{6}$",
+        "description": "Member identifier supplied at invocation time"
+      },
+
+      "discovery_value": "100001",
+      "replace_inside_strings": true
+    }
+  },
+
+  "outputs": {
+    "savings_balance": {
+      "type": "decimal",
+      "nullable": false,
+      "description": "Current savings account balance"
+    }
+  },
+
+  "business_outcomes": [
+    {
+        "code": "MEMBER_NOT_FOUND",
+        "detect": {
+        "type": "text_present",
+        "value": "*** NO MEMBER FOUND ***"
+        },
+        "terminal": true
+    },
+    {
+        "code": "NO_SAVINGS_ACCOUNT",
+        "detect": {
+        "type": "text_present",
+        "value": "NO SAVINGS ACCOUNT ON FILE"
+        },
+        "terminal": true
+    }
+],
+
+ "hard_failures": [
+    {
+        "code": "PERMISSION_DENIED",
+        "detect": {
+        "type": "text_present",
+        "value": "ERROR CODE: SEC-403"
+        },
+        "terminal": true
+    }
+],
+
+"step_retries": {
+  "step-03-click-accounts_button": {
+    "max_attempts": 2,
+    "delay_ms": 3000,
+    "retry_on": [
+      "CHECKPOINT_FAILED"
+    ]
+  }
+},
+
+  "success_condition": {
+    "type": "output_extractable",
+    "output": "savings_balance"
+  },
+
+  "trajectory": {
+    "start_step_index": 4,
+    "end_step_index": 8
+  },
+
+  "default_timeout_ms": 8000
+}

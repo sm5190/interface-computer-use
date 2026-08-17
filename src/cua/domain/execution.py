@@ -4,9 +4,11 @@ from typing import Any
 
 from pydantic import Field, model_validator
 
-from .actions import ActionSpec
+from .actions import ActionSpec, RiskSpec
 from .base import DomainModel
+from .discovery import CheckpointSpec
 from .enums import (
+    ActionType,
     Actor,
     ControlOwner,
     ExecutionMode,
@@ -55,20 +57,50 @@ class CheckpointResult(DomainModel):
 class StepRecord(DomainModel):
     run_id: str = Field(min_length=1)
     step_index: int = Field(ge=0)
+
     actor: Actor
     mode: ExecutionMode
 
     intent: str | None = None
     action: ActionSpec | None = None
+
+    # Serialized logical target proposed during discovery.
+    # No Playwright Locator or surface handle is persisted here.
     target_summary: dict[str, Any] | None = None
+
+    # Name of the capability output populated by an EXTRACT action.
+    output_binding: str | None = None
+
+    # Deterministic risk classification used when the action was gated.
+    risk: RiskSpec | None = None
 
     resolution: ResolutionEvidence | None = None
     policy_decision: PolicyDecision | None = None
+
+    # The executable checkpoint contract itself.
+    # This is what a future capability can replay.
+    checkpoint_spec: CheckpointSpec | None = None
+
+    # Evidence showing whether the checkpoint passed during discovery.
     checkpoint_result: CheckpointResult | None = None
 
     outcome_code: str | None = None
     evidence_refs: list[str] = Field(default_factory=list)
     duration_ms: int = Field(ge=0)
+
+    @model_validator(mode="after")
+    def validate_output_binding(self) -> StepRecord:
+        if self.output_binding is not None:
+            if (
+                self.action is None
+                or self.action.type != ActionType.EXTRACT
+            ):
+                raise ValueError(
+                    "output_binding may only be declared "
+                    "for an extract action"
+                )
+
+        return self
 
 
 class ExecutionResult(DomainModel):

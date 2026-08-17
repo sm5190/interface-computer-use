@@ -255,12 +255,31 @@ class PlaywrightSurface:
                     "input_text requires a value"
                 )
 
+            # locator.fill(
+            #     str(action.value),
+            #     timeout=self._default_timeout_ms,
+            # )
+
             locator.fill(
                 str(action.value),
                 timeout=self._default_timeout_ms,
             )
 
-            return SurfaceActionResult()
+            actual_value = locator.input_value(
+                timeout=self._default_timeout_ms
+            )
+
+            print(
+                "[DEBUG INPUT_TEXT]",
+                {
+                    "requested": str(action.value),
+                    "actual": actual_value,
+                },
+            )
+
+            return SurfaceActionResult(
+                value=actual_value
+            )
 
         if action.type == ActionType.SELECT_OPTION:
             locator = self._require_locator(target_handle)
@@ -308,29 +327,30 @@ class PlaywrightSurface:
             )
 
         if action.type == ActionType.EXTRACT:
-            locator = self._require_locator(target_handle)
-
-            value = locator.evaluate(
-                """
-                element => {
-                    if (
-                        element instanceof HTMLInputElement ||
-                        element instanceof HTMLTextAreaElement ||
-                        element instanceof HTMLSelectElement
-                    ) {
-                        return element.value;
-                    }
-
-                    return (
-                        element.innerText ||
-                        element.textContent ||
-                        ""
-                    ).trim();
-                }
-                """
+            locator = self._require_locator(
+                target_handle
             )
 
-            return SurfaceActionResult(value=value)
+            tag_name = locator.evaluate(
+                "element => element.tagName.toLowerCase()"
+            )
+
+            if tag_name in {
+                "input",
+                "textarea",
+                "select",
+            }:
+                return SurfaceActionResult(
+                    value=locator.input_value(
+                        timeout=self._default_timeout_ms
+                    )
+                )
+
+            return SurfaceActionResult(
+                value=locator.inner_text(
+                    timeout=self._default_timeout_ms
+                ).strip()
+            )
 
         if action.type == ActionType.SCROLL:
             amount = (
