@@ -1,0 +1,86 @@
+{
+  "source_run_id": "discovery-20260815-154033-e81e5631",
+
+  "steps": [
+    {
+      "step_index": 4,
+
+      "action": {
+        "type": "input_text",
+        "value": "{{member_id}}",
+        "option": null
+      },
+
+      "risk": {
+        "level": "reversible_write",
+        "reversible": true
+      },
+
+      "checkpoint_spec": {
+        "type": "control_value",
+
+        "target": {
+          "logical_name": "member_number_input",
+
+          "strategies": [
+            {
+              "kind": "attribute",
+              "attribute": "name",
+              "value": "f_14"
+            },
+
+            {
+              "kind": "text_anchor",
+              "anchor": "MEMBER NUMBER:",
+              "relation": "nearest_input_right"
+            }
+          ]
+        },
+
+        "expected": "{{member_id}}"
+      },
+
+      "reason": "Restore parameter binding removed by evidence redaction"
+    },
+
+    {
+      "step_index": 6,
+
+      "risk": {
+        "level": "safe",
+        "reversible": true
+      },
+
+      "reason": "Legacy trajectory predates persisted risk metadata"
+    },
+
+    {
+      "step_index": 7,
+
+      "risk": {
+        "level": "safe",
+        "reversible": true
+      },
+
+      "reason": "Legacy trajectory predates persisted risk metadata"
+    },
+
+    {
+      "step_index": 8,
+
+      "output_binding": "savings_balance",
+
+      "risk": {
+        "level": "safe",
+        "reversible": true
+      },
+
+      "checkpoint_spec": {
+        "type": "output_extractable",
+        "output": "savings_balance"
+      },
+
+      "reason": "Restore extract output contract from legacy discovery evidence"
+    }
+  ]
+}

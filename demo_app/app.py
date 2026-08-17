@@ -14,7 +14,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from . import db
 from .fixtures import OPERATORS
-from .scenarios import maybe_apply_slow_once
+from .scenarios import consume_slow_once
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -171,14 +171,37 @@ def accounts(request: Request, member_id: str):
     if member["scenario"] == "permission_denied":
         return render(request, "access_denied.html", {"member": member}, status_code=403)
 
-    approved = request.session.get("override_approved", {})
-    show_override_dialog = member["scenario"] == "unexpected_dialog" and not approved.get(member_id)
+    approved = request.session.get(
+        "override_approved",
+        {},
+    )
+
+    show_override_dialog = (
+        member["scenario"] == "unexpected_dialog"
+        and not approved.get(member_id)
+    )
+
+    defer_accounts_frame = (
+        member["scenario"] == "slow_once"
+        and consume_slow_once(
+            request,
+            member_id,
+        )
+    )
+
     return render(
         request,
         "accounts.html",
-        {"member": member, "show_override_dialog": show_override_dialog},
+        {
+            "member": member,
+            "show_override_dialog": (
+                show_override_dialog
+            ),
+            "defer_accounts_frame": (
+                defer_accounts_frame
+            ),
+        },
     )
-
 
 @app.post("/members/{member_id}/override")
 def resolve_override(request: Request, member_id: str, decision: str = Form(...)):
@@ -200,20 +223,34 @@ def resolve_override(request: Request, member_id: str, decision: str = Form(...)
     raise HTTPException(status_code=400, detail="Unknown override decision")
 
 
-@app.get("/members/{member_id}/accounts/frame", response_class=HTMLResponse)
-def accounts_frame(request: Request, member_id: str):
+@app.get(
+    "/members/{member_id}/accounts/frame",
+    response_class=HTMLResponse,
+)
+def accounts_frame(
+    request: Request,
+    member_id: str,
+    recovered: int = 0,
+):
     if redirect := require_session(request):
         return redirect
     member = db.get_member(member_id)
     if not member:
         raise HTTPException(status_code=404, detail="Member not found")
 
-    delayed = maybe_apply_slow_once(request, member_id)
-    accounts_data = db.get_accounts(member_id)
+    # delayed = maybe_apply_slow_once(request, member_id)
+    accounts_data = db.get_accounts(
+        member_id
+    )
+
     return render(
         request,
         "account_frame.html",
-        {"member": member, "accounts": accounts_data, "delayed": delayed},
+        {
+            "member": member,
+            "accounts": accounts_data,
+            "delayed": bool(recovered),
+        },
     )
 
 

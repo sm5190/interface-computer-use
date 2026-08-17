@@ -23,7 +23,36 @@
 </div>
 {% endif %}
 
-<iframe src="/members/{{ member.member_id }}/accounts/frame" name="acct_view" class="account-frame"></iframe>
+{% if defer_accounts_frame %}
+
+<iframe
+  src="about:blank"
+  data-src="/members/{{ member.member_id }}/accounts/frame?recovered=1"
+  name="acct_view"
+  class="account-frame">
+</iframe>
+
+<script>
+  window.setTimeout(function () {
+    const frame = document.querySelector(
+      'iframe[name="acct_view"]'
+    );
+
+    if (frame && frame.dataset.src) {
+      frame.src = frame.dataset.src;
+    }
+  }, 2500);
+</script>
+
+{% else %}
+
+<iframe
+  src="/members/{{ member.member_id }}/accounts/frame"
+  name="acct_view"
+  class="account-frame">
+</iframe>
+
+{% endif %}
 
 <table class="nav-table servicing-actions">
   <tr>

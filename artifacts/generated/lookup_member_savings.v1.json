@@ -1,0 +1,293 @@
+{
+  "schema_version": "1.0",
+  "capability": {
+    "id": "lookup_member_savings",
+    "version": "1.0.0",
+    "name": "Lookup Member Savings Balance",
+    "description": "Return the current savings balance for a requested member"
+  },
+  "application": {
+    "family": "legacy-bank-core",
+    "surface": "browser",
+    "entry_point": "/members",
+    "compatibility": {
+      "version_range": null
+    }
+  },
+  "inputs": {
+    "member_id": {
+      "type": "string",
+      "required": true,
+      "sensitive": true,
+      "pattern": "^[0-9]{6}$",
+      "description": "Member identifier supplied at invocation time",
+      "default": null
+    }
+  },
+  "outputs": {
+    "savings_balance": {
+      "type": "decimal",
+      "nullable": false,
+      "description": "Current savings account balance"
+    }
+  },
+  "steps": [
+    {
+      "id": "step-01-input_text-member_number_input",
+      "action": {
+        "type": "input_text",
+        "value": "{{member_id}}",
+        "option": null
+      },
+      "target": {
+        "logical_name": "member_number_input",
+        "strategies": [
+          {
+            "kind": "attribute",
+            "attribute": "name",
+            "value": "f_14"
+          },
+          {
+            "kind": "text_anchor",
+            "anchor": "MEMBER NUMBER:",
+            "relation": "nearest_input_right"
+          }
+        ]
+      },
+      "output": null,
+      "risk": {
+        "level": "reversible_write",
+        "reversible": true
+      },
+      "checkpoint": {
+        "type": "control_value",
+        "target": {
+          "logical_name": "member_number_input",
+          "strategies": [
+            {
+              "kind": "attribute",
+              "attribute": "name",
+              "value": "f_14"
+            },
+            {
+              "kind": "text_anchor",
+              "anchor": "MEMBER NUMBER:",
+              "relation": "nearest_input_right"
+            }
+          ]
+        },
+        "value": null,
+        "expected": "{{member_id}}",
+        "pattern": null,
+        "output": null,
+        "all_of": []
+      },
+      "timeout_ms": 8000,
+      "retry": {
+        "max_attempts": 1,
+        "delay_ms": 0,
+        "retry_on": []
+      }
+    },
+    {
+      "id": "step-02-click-f8_search_button",
+      "action": {
+        "type": "click",
+        "value": null,
+        "option": null
+      },
+      "target": {
+        "logical_name": "f8_search_button",
+        "strategies": [
+          {
+            "kind": "attribute",
+            "attribute": "name",
+            "value": "cmd_8"
+          },
+          {
+            "kind": "semantic",
+            "role": "button",
+            "accessible_name": null
+          }
+        ]
+      },
+      "output": null,
+      "risk": {
+        "level": "safe",
+        "reversible": true
+      },
+      "checkpoint": {
+        "type": "control_present",
+        "target": {
+          "logical_name": "accounts_button",
+          "strategies": [
+            {
+              "kind": "attribute",
+              "attribute": "name",
+              "value": "cmd_22"
+            }
+          ]
+        },
+        "value": null,
+        "expected": null,
+        "pattern": null,
+        "output": null,
+        "all_of": []
+      },
+      "timeout_ms": 8000,
+      "retry": {
+        "max_attempts": 1,
+        "delay_ms": 0,
+        "retry_on": []
+      }
+    },
+    {
+      "id": "step-03-click-accounts_button",
+      "action": {
+        "type": "click",
+        "value": null,
+        "option": null
+      },
+      "target": {
+        "logical_name": "accounts_button",
+        "strategies": [
+          {
+            "kind": "attribute",
+            "attribute": "name",
+            "value": "cmd_22"
+          }
+        ]
+      },
+      "output": null,
+      "risk": {
+        "level": "safe",
+        "reversible": true
+      },
+      "checkpoint": {
+        "type": "control_present",
+        "target": {
+          "logical_name": "savings_balance_cell",
+          "strategies": [
+            {
+              "kind": "text_anchor",
+              "anchor": "SAVINGS",
+              "relation": "same_row_last_cell"
+            }
+          ]
+        },
+        "value": null,
+        "expected": null,
+        "pattern": null,
+        "output": null,
+        "all_of": []
+      },
+      "timeout_ms": 8000,
+      "retry": {
+        "max_attempts": 2,
+        "delay_ms": 3000,
+        "retry_on": [
+          "CHECKPOINT_FAILED"
+        ]
+      }
+    },
+    {
+      "id": "step-04-extract-savings_balance_cell",
+      "action": {
+        "type": "extract",
+        "value": null,
+        "option": null
+      },
+      "target": {
+        "logical_name": "savings_balance_cell",
+        "strategies": [
+          {
+            "kind": "text_anchor",
+            "anchor": "SAVINGS",
+            "relation": "same_row_last_cell"
+          }
+        ]
+      },
+      "output": "savings_balance",
+      "risk": {
+        "level": "safe",
+        "reversible": true
+      },
+      "checkpoint": {
+        "type": "output_extractable",
+        "target": null,
+        "value": null,
+        "expected": null,
+        "pattern": null,
+        "output": "savings_balance",
+        "all_of": []
+      },
+      "timeout_ms": 8000,
+      "retry": {
+        "max_attempts": 1,
+        "delay_ms": 0,
+        "retry_on": []
+      }
+    }
+  ],
+  "business_outcomes": [
+    {
+      "code": "MEMBER_NOT_FOUND",
+      "detect": {
+        "type": "text_present",
+        "target": null,
+        "value": "*** NO MEMBER FOUND ***",
+        "expected": null,
+        "pattern": null,
+        "output": null,
+        "all_of": []
+      },
+      "terminal": true
+    },
+    {
+      "code": "NO_SAVINGS_ACCOUNT",
+      "detect": {
+        "type": "text_present",
+        "target": null,
+        "value": "NO SAVINGS ACCOUNT ON FILE",
+        "expected": null,
+        "pattern": null,
+        "output": null,
+        "all_of": []
+      },
+      "terminal": true
+    }
+  ],
+  "hard_failures": [
+    {
+      "code": "PERMISSION_DENIED",
+      "detect": {
+        "type": "text_present",
+        "target": null,
+        "value": "ERROR CODE: SEC-403",
+        "expected": null,
+        "pattern": null,
+        "output": null,
+        "all_of": []
+      },
+      "terminal": true
+    }
+  ],
+  "success_condition": {
+    "type": "output_extractable",
+    "target": null,
+    "value": null,
+    "expected": null,
+    "pattern": null,
+    "output": "savings_balance",
+    "all_of": []
+  },
+  "policy": {
+    "risk": "reversible_write",
+    "requires_human_approval": false
+  },
+  "metadata": {
+    "created_from_run": "discovery-20260815-154033-e81e5631",
+    "approval_state": "draft",
+    "created_at": "2026-08-17T01:55:13.445243Z"
+  }
+}

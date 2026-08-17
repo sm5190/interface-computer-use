@@ -501,11 +501,8 @@ class DiscoveryEngine:
             checkpoint = (
                 decision.expected_effect.checkpoint
                 if (
-                    decision.expected_effect
-                    is not None
-                    and decision.expected_effect
-                    .checkpoint
-                    is not None
+                    decision.expected_effect is not None
+                    and decision.expected_effect.checkpoint is not None
                 )
                 else _derive_checkpoint(proposal)
             )
@@ -693,18 +690,16 @@ class DiscoveryEngine:
                 intent=decision.intent,
                 action=proposal.action,
                 target_summary=(
-                    proposal.target.model_dump(
-                        mode="json"
-                    )
+                    proposal.target.model_dump(mode="json")
                     if proposal.target
                     else None
                 ),
+                output_binding=proposal.output,
+                risk=gate.risk,
                 resolution=resolution,
                 policy_decision=gate.decision,
-                checkpoint_result=(
-                    checkpoint_result
-                ),
-                outcome_code=outcome_code,
+                checkpoint_spec=checkpoint,
+                outcome_code="ACTION_EXECUTION_FAILED",
                 evidence_refs=[
                     observation.screenshot_ref
                 ],

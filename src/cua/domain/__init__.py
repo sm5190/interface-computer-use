@@ -17,6 +17,7 @@ from .capabilities import (
     CapabilityPolicy,
     CapabilityStep,
     CompatibilitySpec,
+    HardFailureRule,
     InputDefinition,
     OutputDefinition,
 )
@@ -90,6 +91,7 @@ __all__ = [
     "ExpectedEffect",
     "FrameObservation",
     "GoalRequest",
+    "HardFailureRule",
     "InputDefinition",
     "InterventionKind",
     "InterventionRequest",
